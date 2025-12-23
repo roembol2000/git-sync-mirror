@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -ue
+
+if [ ! -f repos.txt ]; then
+  echo "++repos.txt doesn't exist."
+  exit 1
+fi
+
+readarray -t syncpairs < repos.txt
+
+mkdir -p repos
+
+workdir=$(pwd)
+
+for syncpair in "${syncpairs[@]}"; do
+  IFS='|' read -r src dest <<< "$syncpair"
+
+  if ! git ls-remote "$src" > /dev/null; then
+    echo "++Remote $src" could not be found!
+    exit 1
+  fi
+
+  if ! git ls-remote "$dest" > /dev/null; then
+    echo "++Remote $dest" could not be found!
+    exit 1
+  fi
+
+  if [ ! -d repos/$src ]; then
+    echo "++$src hasn't been cloned yet. Cloning..."
+    mkdir -p "repos/$src"
+    git clone --mirror "$src" "repos/$src"
+    cd "repos/$src"
+  else
+    echo "++$src exists on disk, fetching all changes..."
+    cd "repos/$src"
+    git fetch --all
+  fi
+
+  echo "++Pushing changes to $dest"
+  git push --mirror "$dest"
+
+  cd "$workdir"
+
+  printf "\n"
+done
+
