@@ -17,12 +17,12 @@ for syncpair in "${syncpairs[@]}"; do
   IFS='|' read -r src dest <<< "$syncpair"
 
   if ! git ls-remote "$src" > /dev/null; then
-    echo "++Remote $src" could not be found!
+    echo "++Remote $src could not be found!"
     exit 1
   fi
 
   if ! git ls-remote "$dest" > /dev/null; then
-    echo "++Remote $dest" could not be found!
+    echo "++Remote $dest could not be found!"
     exit 1
   fi
 
